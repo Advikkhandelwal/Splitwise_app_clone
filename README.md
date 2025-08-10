@@ -2,7 +2,7 @@
 React-Native Expense Splitter
 
 2.Name->Advik Khandelwal
-roll_no-> 2024-B-12072007
+URN-> 2024-B-12072007
 
 3.Problem Statement
 Splitting expenses across groups (friends, roommates, travel companions) is error-prone and tedious. This project aims to simplify tracking, settling, and managing shared expenses efficiently across platforms.
