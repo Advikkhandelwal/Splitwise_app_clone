@@ -26,9 +26,9 @@ Web Frontend: React.js
 
 Mobile Frontend: React Native
 
-Backend: Node.js
+Backend: Node.js,Express.js
 
-Database: PostgreSQL / MySQL / MongoDB
+Database: Prisma/ MySQL 
 
 
 
