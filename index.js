@@ -1,26 +1,50 @@
+import dotenv from "dotenv";
+dotenv.config();
+import cors from "cors";
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-
 // @prisma/client is an auto-generated and type-safe database client created for your schema.
 //When you run: npx prisma generate
 //The Prisma Client is an auto-generated database client (library) that Prisma builds for you, based on your schema.prisma
 
 const app = express();
+const prisma = new PrismaClient();
 //new PrismaClient() creates an instance
 //you are creating a connection manager to your database.
-const prisma = new PrismaClient();
-
+app.use(cors());
 app.use(express.json());
+
 // It tells Express (your web server framework) to use the built-in middleware express.json().
 // This middleware automatically parses incoming request bodies that are in JSON format.
 // After parsing, it attaches the result to req.body
+prisma
+  .$connect()
+  .then(() => console.log("Prisma connected"))
+  .catch((err) => console.error("Prisma connection error:", err));
 
+// USERS
+
+app.get("/users", async (req, res) => {
+  console.log("Hit GET /users");
+  try {
+    const users = await prisma.user.findMany();
+    return res.status(200).json(users);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Create a user
 app.post("/users", async (req, res) => {
+  console.log("Hit POST /users");
   try {
     const { name, email, phone } = req.body;
 
     if (!name || !email || !phone) {
-      return res.status(400).json({ error: "This is a required feild" });
+      return res
+        .status(400)
+        .json({ error: "name, email and phone are required" });
     }
 
     const user = await prisma.user.create({
@@ -30,101 +54,105 @@ app.post("/users", async (req, res) => {
         phone,
       },
     });
-    res.status(201).json(user);
+    return res.status(201).json(user);
   } catch (err) {
-    if (err.code === "P2002") {
-      return res.status(409).json({ error: "Email already exists" });
+    console.error(err);
+    //Prisma duplication err code
+    if (err?.code === "P2002") {
+      return res
+        .status(409)
+        .json({ error: "Unique constraint failed (probably email)" });
     }
-    //P2002 is a Prisma error code ,it means Unique constraint failed on the database.
-
-    console.log(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
+// Get user by id
 app.get("/users/:id", async (req, res) => {
+  console.log("Hit GET /users/:id");
   try {
-    const { id } = req.params;
-    const userId = parseInt(id, 10);
-    if (isNaN(userId)) {
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId))
       return res.status(400).json({ error: "User Id must be a number" });
-    }
+
     const user = await prisma.user.findUnique({
       where: { user_id: userId },
     });
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) return res.status(404).json({ error: "User not found" });
     return res.status(200).json(user);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// GROUPS
+
+// Create group
 app.post("/groups", async (req, res) => {
+  console.log("Hit POST /groups");
   try {
     const { name, description, created_by } = req.body;
+    if (!name || !description || created_by == null) {
+      return res
+        .status(400)
+        .json({ error: "name, description and created_by are required" });
+    }
+    const creatorId = parseInt(created_by, 10);
+    if (isNaN(creatorId))
+      return res.status(400).json({ error: "created_by must be a number" });
 
-    if (!name || !description || !created_by) {
-      return res.status(400).json({ error: "This is a required feild" });
-    }
     const user = await prisma.user.findUnique({
-      where: { user_id: created_by },
+      where: { user_id: creatorId },
     });
-    if (!user) {
-      return res.status(404).json({ error: "No such user found" });
-    }
+    if (!user) return res.status(404).json({ error: "Creator user not found" });
+
     const group = await prisma.group.create({
       data: {
         name,
         description,
-        created_by,
+        created_by: creatorId,
       },
     });
     return res.status(201).json(group);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
-//Adds a user to an existing group.
-app.post("/groups/:id/members", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { user_id } = req.body;
-    const groupId = parseInt(id, 10);
 
-    if (isNaN(groupId)) {
+// Add member to group
+app.post("/groups/:id/members", async (req, res) => {
+  console.log("Hit POST /groups/:id/members");
+  try {
+    const groupId = parseInt(req.params.id, 10);
+    if (isNaN(groupId))
       return res.status(400).json({ error: "Invalid group id" });
-    }
-    if (!user_id) {
-      return res.status(400).json({ error: "User id is required" });
-    }
+
+    const userId = parseInt(req.body.user_id, 10);
+    if (isNaN(userId))
+      return res
+        .status(400)
+        .json({ error: "User id is required and must be a number" });
 
     const group = await prisma.group.findUnique({
       where: { group_id: groupId },
     });
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
-    }
+    if (!group) return res.status(404).json({ error: "Group not found" });
 
-    const user = await prisma.user.findUnique({ where: { user_id } });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    const user = await prisma.user.findUnique({ where: { user_id: userId } });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     const existingMember = await prisma.groupMember.findFirst({
-      where: { group_id: groupId, user_id },
+      where: { group_id: groupId, user_id: userId },
     });
-    if (existingMember) {
+    if (existingMember)
       return res.status(409).json({ error: "User already in this group" });
-    }
 
     const member = await prisma.groupMember.create({
-      data: { group_id: groupId, user_id },
+      data: { group_id: groupId, user_id: userId },
     });
-
     return res.status(201).json(member);
   } catch (err) {
     console.error(err);
@@ -132,56 +160,15 @@ app.post("/groups/:id/members", async (req, res) => {
   }
 });
 
-app.post("/expenses", async (req, res) => {
-  try {
-    const { group_id, paid_by, amount, description } = req.body;
-
-    if (!group_id || !paid_by || !amount) {
-      return res
-        .status(400)
-        .json({ error: "group_id, paid_by, and amount are required" });
-    }
-
-    const group = await prisma.group.findUnique({
-      where: { group_id: group_id },
-    });
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { user_id: paid_by },
-    });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const expense = await prisma.expense.create({
-      data: {
-        group_id,
-        paid_by,
-        amount,
-        description,
-      },
-    });
-
-    return res.status(201).json(expense);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 app.get("/groups/:id", async (req, res) => {
+  console.log("Hit GET /groups/:id");
   try {
-    const { id } = req.params;
-    const groupId = parseInt(id, 10);
-
-    if (isNaN(groupId)) {
+    const groupId = parseInt(req.params.id, 10);
+    if (isNaN(groupId))
       return res.status(400).json({ error: "Invalid Group id" });
-    }
+
     const group = await prisma.group.findUnique({
-      where: { user_id: userId },
+      where: { group_id: groupId },
       include: {
         members: {
           include: {
@@ -197,10 +184,10 @@ app.get("/groups/:id", async (req, res) => {
         },
       },
     });
-    if (!group) {
-      return res.status(404).json({ error: "Group Not Found" });
-    }
-    res.status(200).json({
+
+    if (!group) return res.status(404).json({ error: "Group Not Found" });
+
+    return res.status(200).json({
       group_id: group.group_id,
       name: group.name,
       description: group.description,
@@ -209,62 +196,52 @@ app.get("/groups/:id", async (req, res) => {
       members: group.members.map((m) => m.user),
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error(err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.get("/groups/:id/balance", async (req, res) => {
+// ----------- EXPENSES ------------
+
+// Create expense (basic)
+app.post("/expenses", async (req, res) => {
+  console.log("Hit POST /expenses");
   try {
-    const { id } = req.params;
-    const groupId = parseInt(id, 10);
-
-    if (isNaN(groupId)) {
-      return res.status(404).json({ error: "Group not found" });
+    const { group_id, paid_by, amount, description } = req.body;
+    if (group_id == null || paid_by == null || amount == null) {
+      return res
+        .status(400)
+        .json({ error: "group_id, paid_by, and amount are required" });
     }
 
-    const members = await prisma.GroupMember.findMany({
-      where: { group_id: groupId },
-      include: { user: true },
-    });
+    const groupId = parseInt(group_id, 10);
+    const paidById = parseInt(paid_by, 10);
+    const amt = Number(amount);
 
-    if (members.length === 0) {
-      return res.status(404).json({ error: "No member found in this group" });
-    }
-
-    const balances = {};
-    members.forEach((member) => {
-      balances[member.user_id] = 0;
-    });
-
-    const expenses = await prisma.Expense.findMany({
-      where: { group_id: groupId },
-      include: { splits: true },
-    });
-
-    expenses.forEach((exp) => {
-      if (exp.paid_by) {
-        balances[exp.paid_by] += Number(exp.amount);
-      }
-      exp.splits.forEach((split) => {
-        balances[split.user_id] -= Number(split.share);
+    if (isNaN(groupId) || isNaN(paidById) || isNaN(amt)) {
+      return res.status(400).json({
+        error: "group_id, paid_by must be numbers and amount must be numeric",
       });
-    });
+    }
 
-    const settlements = await prisma.Settlement.findMany({
+    const group = await prisma.group.findUnique({
       where: { group_id: groupId },
     });
+    if (!group) return res.status(404).json({ error: "Group not found" });
 
-    settlements.forEach((settle) => {
-      if (settle.paid_by) {
-        balances[settle.paid_by] -= Number(settle.amount);
-      }
-      if (settle.paid_to) {
-        balances[settle.paid_to] += Number(settle.amount);
-      }
+    const user = await prisma.user.findUnique({ where: { user_id: paidById } });
+    if (!user) return res.status(404).json({ error: "User (payer) not found" });
+
+    const expense = await prisma.expense.create({
+      data: {
+        group_id: groupId,
+        paid_by: paidById,
+        amount: amt,
+        description: description ?? null,
+      },
     });
 
-    return res.status(200).json(balances);
+    return res.status(201).json(expense);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
@@ -272,48 +249,26 @@ app.get("/groups/:id/balance", async (req, res) => {
 });
 
 app.get("/expenses/:id", async (req, res) => {
+  console.log("Hit GET /expenses/:id");
   try {
-    const { id } = req.params;
-    const expenseId = parseInt(id, 10);
-
-    if (isNaN(expenseId)) {
+    const expenseId = parseInt(req.params.id, 10);
+    if (isNaN(expenseId))
       return res.status(400).json({ error: "Invalid expense id" });
-    }
 
     const expense = await prisma.expense.findUnique({
       where: { expense_id: expenseId },
       include: {
-        payer: {
-          select: {
-            user_id: true,
-            name: true,
-            email: true,
-          },
-        },
-        group: {
-          select: {
-            group_id: true,
-            name: true,
-            description: true,
-          },
-        },
+        payer: { select: { user_id: true, name: true, email: true } },
+        group: { select: { group_id: true, name: true, description: true } },
         splits: {
           include: {
-            user: {
-              select: {
-                user_id: true,
-                name: true,
-                email: true,
-              },
-            },
+            user: { select: { user_id: true, name: true, email: true } },
           },
         },
       },
     });
 
-    if (!expense) {
-      return res.status(404).json({ error: "Expense not found" });
-    }
+    if (!expense) return res.status(404).json({ error: "Expense not found" });
 
     return res.status(200).json({
       expense_id: expense.expense_id,
@@ -324,7 +279,7 @@ app.get("/expenses/:id", async (req, res) => {
       paid_by: expense.payer,
       splits: expense.splits.map((s) => ({
         user: s.user,
-        share: s.share,
+        share: s.share ?? s.amount ?? null,
       })),
     });
   } catch (err) {
@@ -333,47 +288,29 @@ app.get("/expenses/:id", async (req, res) => {
   }
 });
 
-//
-
 app.get("/groups/:id/expenses", async (req, res) => {
+  console.log("Hit GET /groups/:id/expenses");
   try {
-    const { id } = req.params;
-    const groupId = parseInt(id, 10);
-
-    if (isNaN(groupId)) {
+    const groupId = parseInt(req.params.id, 10);
+    if (isNaN(groupId))
       return res.status(400).json({ error: "Invalid group id" });
-    }
 
     const group = await prisma.group.findUnique({
       where: { group_id: groupId },
     });
-
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
-    }
+    if (!group) return res.status(404).json({ error: "Group not found" });
 
     const expenses = await prisma.expense.findMany({
       where: { group_id: groupId },
       include: {
-        payer: {
-          select: {
-            user_id: true,
-            name: true,
-            email: true,
-          },
-        },
+        payer: { select: { user_id: true, name: true, email: true } },
         splits: {
           include: {
-            user: {
-              select: {
-                user_id: true,
-                name: true,
-                email: true,
-              },
-            },
+            user: { select: { user_id: true, name: true, email: true } },
           },
         },
       },
+      orderBy: { created_at: "desc" },
     });
 
     return res.status(200).json(
@@ -385,7 +322,7 @@ app.get("/groups/:id/expenses", async (req, res) => {
         paid_by: exp.payer,
         splits: exp.splits.map((s) => ({
           user: s.user,
-          share: s.share,
+          share: s.share ?? s.amount ?? null,
         })),
       }))
     );
@@ -395,64 +332,130 @@ app.get("/groups/:id/expenses", async (req, res) => {
   }
 });
 
+app.get("/groups/:id/balance", async (req, res) => {
+  console.log("Hit GET /groups/:id/balance");
+  try {
+    const groupId = parseInt(req.params.id, 10);
+    if (isNaN(groupId))
+      return res.status(400).json({ error: "Invalid group id" });
+
+    const members = await prisma.groupMember.findMany({
+      where: { group_id: groupId },
+      include: { user: true },
+    });
+
+    if (!members || members.length === 0) {
+      return res.status(404).json({ error: "No member found in this group" });
+    }
+
+    const balances = {};
+    members.forEach((member) => {
+      const uid = member.user.user_id;
+      balances[uid] = 0;
+    });
+
+    const expenses = await prisma.expense.findMany({
+      where: { group_id: groupId },
+      include: { splits: { include: { user: true } } },
+    });
+
+    expenses.forEach((exp) => {
+      if (exp.paid_by)
+        balances[exp.paid_by] =
+          (balances[exp.paid_by] ?? 0) + Number(exp.amount);
+
+      exp.splits.forEach((split) => {
+        const uid = split.user ? split.user.user_id : split.user_id;
+        const share = Number(split.share ?? split.amount ?? 0);
+        balances[uid] = (balances[uid] ?? 0) - share;
+      });
+    });
+
+    // apply settlements
+    const settlements = await prisma.settlement.findMany({
+      where: { group_id: groupId },
+    });
+    settlements.forEach((settle) => {
+      if (settle.paid_by)
+        balances[settle.paid_by] =
+          (balances[settle.paid_by] ?? 0) - Number(settle.amount);
+      if (settle.paid_to)
+        balances[settle.paid_to] =
+          (balances[settle.paid_to] ?? 0) + Number(settle.amount);
+    });
+
+    return res.status(200).json(balances);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+//SETTLEMENTS
+
+
 app.post("/settlements", async (req, res) => {
+  console.log("Hit POST /settlements");
   try {
     const { group_id, paid_by, paid_to, amount } = req.body;
-
-    if (!group_id || !paid_by || !paid_to || !amount) {
+    if (
+      group_id == null ||paid_by == null || paid_to == null || amount == null
+    ) {
       return res
         .status(400)
         .json({ error: "group_id, paid_by, paid_to, and amount are required" });
     }
-    if (paid_by === paid_to) {
+
+    const groupId = parseInt(group_id, 10);
+    const paidById = parseInt(paid_by, 10);
+    const paidToId = parseInt(paid_to, 10);
+    const amt = Number(amount);
+
+    if (
+      isNaN(groupId) ||
+      isNaN(paidById) ||
+      isNaN(paidToId) ||
+      isNaN(amt) ||
+      amt <= 0
+    ) {
+      return res.status(400).json({ error: "Invalid numeric values" });
+    }
+    if (paidById === paidToId)
       return res
         .status(400)
         .json({ error: "Payer and receiver cannot be the same user" });
-    }
-    if (isNaN(amount) || Number(amount) <= 0) {
-      return res
-        .status(400)
-        .json({ error: "Amount must be a positive number" });
-    }
 
     const group = await prisma.group.findUnique({
-      where: { group_id: group_id },
+      where: { group_id: groupId },
     });
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
-    }
+    if (!group) return res.status(404).json({ error: "Group not found" });
+
     const payer = await prisma.user.findUnique({
-      where: { user_id: paid_by },
+      where: { user_id: paidById },
     });
-
     const receiver = await prisma.user.findUnique({
-      where: { user_id: paid_to },
+      where: { user_id: paidToId },
     });
-
-    if (!payer || !receiver) {
+    if (!payer || !receiver)
       return res.status(404).json({ error: "Payer or receiver not found" });
-    }
+
     const payerMember = await prisma.groupMember.findFirst({
-      where: {
-        group_id: group_id,
-        user_id: paid_by,
-      },
+      where: { group_id: groupId, user_id: paidById },
     });
     const receiverMember = await prisma.groupMember.findFirst({
-      where: { group_id, user_id: paid_to },
+      where: { group_id: groupId, user_id: paidToId },
     });
-    if (!payerMember || !receiverMember) {
+    if (!payerMember || !receiverMember)
       return res
         .status(400)
         .json({ error: "Both users must be members of the group" });
-    }
 
     const settlement = await prisma.settlement.create({
       data: {
-        group_id,
-        paid_by,
-        paid_to,
-        amount: Number(amount),
+        group_id: groupId,
+        paid_by: paidById,
+        paid_to: paidToId,
+        amount: amt,
       },
     });
 
@@ -463,86 +466,63 @@ app.post("/settlements", async (req, res) => {
   }
 });
 
-app.get("/users/:id/settlements", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const user_id = parseInt(id, 10);
 
-    if (isNaN(user_id)) {
-      res.status(400).json({ error: "Invalid user id" });
-    }
-    const user = await prisma.user.findUnique({
-      where: { user_id: user_id },
-    });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+app.get("/users/:id/settlements", async (req, res) => {
+  console.log("Hit GET /users/:id/settlements");
+  try {
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId))
+      return res.status(400).json({ error: "Invalid user id" });
+
+    const user = await prisma.user.findUnique({ where: { user_id: userId } });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     const settlementsPaid = await prisma.settlement.findMany({
-      where: { paid_by: user_id },
+      where: { paid_by: userId },
       include: {
-        receiver: {
-          select: {
-            user_id: true,
-            user_name: true,
-          },
-        },
-        group: {
-          select: {
-            group_id: true,
-            name: true,
-          },
-        },
+        receiver: { select: { user_id: true, name: true } },
+        group: { select: { group_id: true, name: true } },
       },
     });
+
     const settlementsReceived = await prisma.settlement.findMany({
-      where: { paid_to: user_id },
+      where: { paid_to: userId },
       include: {
-        payer: {
-          select: {
-            user_id: true,
-            name: true,
-          },
-        },
-        group: {
-          select: {
-            group_id: true,
-            name: true,
-          },
-        },
+        payer: { select: { user_id: true, name: true } },
+        group: { select: { group_id: true, name: true } },
       },
     });
-    res.status(200).json({
+
+    return res.status(200).json({
       user: { user_id: user.user_id, name: user.name },
       settlementsPaid,
       settlementsReceived,
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
 app.get("/groups/:id/settlements", async (req, res) => {
+  console.log("Hit GET /groups/:id/settlements");
   try {
-    const { id } = req.params;
-    const groupId = parseInt(id, 10);
-
-    if (isNaN(groupId)) {
+    const groupId = parseInt(req.params.id, 10);
+    if (isNaN(groupId))
       return res.status(400).json({ error: "Invalid group id" });
-    }
+
     const group = await prisma.group.findUnique({
       where: { group_id: groupId },
     });
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
-    }
+    if (!group) return res.status(404).json({ error: "Group not found" });
+
     const settlements = await prisma.settlement.findMany({
       where: { group_id: groupId },
       include: {
         payer: { select: { user_id: true, name: true } },
-        receiver: { select: { user_id: true, name: true } },
+        receiver: { select: { user_id: true, name: true } }, 
       },
+      orderBy: { id: "desc" },
     });
 
     return res.status(200).json({
@@ -555,7 +535,10 @@ app.get("/groups/:id/settlements", async (req, res) => {
   }
 });
 
-
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
 
 
 
