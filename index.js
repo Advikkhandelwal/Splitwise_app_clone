@@ -19,10 +19,24 @@ app.use(express.json());
 // After parsing, it attaches the result to req.body
 prisma
   .$connect()
-  .then(() => console.log("Prisma connected"))
+  .then(() => {
+    console.log("Prisma connected");
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, (err) => {
+      if (err) {
+        console.log(`Error starting server on port ${PORT}`, err);
+      } else {
+        console.log(`Server running on http://localhost:${PORT}`);
+      }
+    });
+  })
   .catch((err) => console.error("Prisma connection error:", err));
 
 // USERS
+
+app.get("/", (req, res) => {
+  res.send("OK");
+});
 
 app.get("/users", async (req, res) => {
   console.log("Hit GET /users");
@@ -393,13 +407,15 @@ app.get("/groups/:id/balance", async (req, res) => {
 
 //SETTLEMENTS
 
-
 app.post("/settlements", async (req, res) => {
   console.log("Hit POST /settlements");
   try {
     const { group_id, paid_by, paid_to, amount } = req.body;
     if (
-      group_id == null ||paid_by == null || paid_to == null || amount == null
+      group_id == null ||
+      paid_by == null ||
+      paid_to == null ||
+      amount == null
     ) {
       return res
         .status(400)
@@ -466,7 +482,6 @@ app.post("/settlements", async (req, res) => {
   }
 });
 
-
 app.get("/users/:id/settlements", async (req, res) => {
   console.log("Hit GET /users/:id/settlements");
   try {
@@ -520,7 +535,7 @@ app.get("/groups/:id/settlements", async (req, res) => {
       where: { group_id: groupId },
       include: {
         payer: { select: { user_id: true, name: true } },
-        receiver: { select: { user_id: true, name: true } }, 
+        receiver: { select: { user_id: true, name: true } },
       },
       orderBy: { id: "desc" },
     });
@@ -533,11 +548,6 @@ app.get("/groups/:id/settlements", async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
   }
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
 });
 
 
