@@ -141,7 +141,7 @@ export default function GroupsScreen() {
       console.log("Creating group with payload:", payload);
       const newGroup = await createGroup(payload);
       console.log("Group created successfully:", newGroup);
-      
+
       const emails = [...inviteEmails];
       let failedInvites = [];
 
@@ -167,7 +167,7 @@ export default function GroupsScreen() {
 
       resetCreateForm();
       setCreateModalVisible(false);
-      
+
       // Force refresh groups with a small delay to ensure backend is ready
       setTimeout(() => {
         loadGroups();
@@ -177,8 +177,8 @@ export default function GroupsScreen() {
         failedInvites.length ? "Group created with warnings" : "Group created",
         failedInvites.length
           ? `The group was created, but we couldn't email: ${failedInvites.join(
-              ", "
-            )}`
+            ", "
+          )}`
           : "Your group is ready and invites are on the way!",
         [{ text: "OK" }]
       );
@@ -248,14 +248,14 @@ export default function GroupsScreen() {
           </View>
           <View style={styles.summaryCopy}>
             <Text style={[styles.summaryTitle, { color: colors.text }]}>
-              Organize every shared expense
+              Groups Summary
             </Text>
-            <Text
+            {/* <Text
               style={[styles.summarySubtitle, { color: colors.textSecondary }]}
             >
               Create groups and send polished EmailJS invites without leaving
               the app.
-            </Text>
+            </Text> */}
           </View>
         </View>
         <View
@@ -347,7 +347,7 @@ export default function GroupsScreen() {
         renderItem={({ item }) => (
           <GroupItem
             group={item}
-            onPress={() => navigation.navigate("AddExpense", { groupId: item.group_id })}
+            onPress={() => navigation.navigate("GroupDetail", { groupId: item.group_id })}
             onInvite={() => {
               setSelectedGroup(item);
               setInviteModalVisible(true);

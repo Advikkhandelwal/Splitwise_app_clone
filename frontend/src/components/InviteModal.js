@@ -9,14 +9,14 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { Button } from "react-native-paper";
+import { LinearGradient } from "expo-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
 import { ThemeContext } from "../contexts/ThemeContext";
 import { sendGroupInvitation } from "../services";
 import { AuthContext } from "../contexts/AuthContext";
 
 export default function InviteModal({ visible, onClose, groupId, groupName }) {
-  const { colors } = useContext(ThemeContext);
+  const { colors, borderRadius, shadows } = useContext(ThemeContext);
   const { user } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -29,7 +29,7 @@ export default function InviteModal({ visible, onClose, groupId, groupName }) {
     }
 
     // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
     if (!emailRegex.test(email.trim())) {
       Alert.alert("Error", "Please enter a valid email address");
       return;
@@ -69,75 +69,92 @@ export default function InviteModal({ visible, onClose, groupId, groupName }) {
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={[styles.modal, { backgroundColor: colors.card }]}>
+        <View style={[styles.modal, { backgroundColor: colors.card, borderTopLeftRadius: borderRadius.xxl, borderTopRightRadius: borderRadius.xxl }]}>
+          {/* Header with gradient accent */}
+          <LinearGradient
+            colors={[colors.primary + "15", "transparent"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.headerGradient}
+          />
+
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>
-              Invite to Group
-            </Text>
-            <TouchableOpacity onPress={onClose}>
+            <View style={styles.headerLeft}>
+              <View style={[styles.iconCircle, { backgroundColor: colors.primary + "20" }]}>
+                <Icon name="mail-outline" size={24} color={colors.primary} />
+              </View>
+              <View>
+                <Text style={[styles.title, { color: colors.text }]}>
+                  Invite to Group
+                </Text>
+                <Text style={[styles.groupName, { color: colors.textSecondary }]}>
+                  {groupName}
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Icon name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
-
-          <Text style={[styles.groupName, { color: colors.textSecondary }]}>
-            {groupName}
-          </Text>
 
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: colors.text }]}>
               Email Address *
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.background,
-                  color: colors.text,
-                  borderColor: colors.border,
-                },
-              ]}
-              placeholder="friend@example.com"
-              placeholderTextColor={colors.textSecondary}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+            <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, borderRadius: borderRadius.md }]}>
+              <Icon name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.input, { color: colors.text }]}
+                placeholder="friend@example.com"
+                placeholderTextColor={colors.placeholder}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
           </View>
 
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: colors.text }]}>
               Name (Optional)
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.background,
-                  color: colors.text,
-                  borderColor: colors.border,
-                },
-              ]}
-              placeholder="Friend's name"
-              placeholderTextColor={colors.textSecondary}
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
-            />
+            <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, borderRadius: borderRadius.md }]}>
+              <Icon name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.input, { color: colors.text }]}
+                placeholder="Friend's name"
+                placeholderTextColor={colors.placeholder}
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+              />
+            </View>
           </View>
 
-          <Button
-            mode="contained"
-            onPress={handleSendInvitation}
-            loading={loading}
-            disabled={loading}
-            style={[styles.button, { backgroundColor: colors.primary }]}
-            contentStyle={styles.buttonContent}
-            labelStyle={styles.buttonLabel}
+          <LinearGradient
+            colors={colors.primaryGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.button, { borderRadius: borderRadius.md }, shadows.md]}
           >
-            Send Invitation
-          </Button>
+            <TouchableOpacity
+              onPress={handleSendInvitation}
+              disabled={loading}
+              style={styles.buttonInner}
+              activeOpacity={0.8}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Icon name="send" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                  <Text style={styles.buttonText}>Send Invitation</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </LinearGradient>
 
           <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
             <Text style={[styles.cancelText, { color: colors.textSecondary }]}>
@@ -153,29 +170,52 @@ export default function InviteModal({ visible, onClose, groupId, groupName }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     justifyContent: "flex-end",
   },
   modal: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     padding: 24,
     paddingBottom: 40,
     maxHeight: "80%",
+    position: "relative",
+    overflow: "hidden",
+  },
+  headerGradient: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 24,
+  },
+  headerLeft: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    flex: 1,
+  },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "700",
+    marginBottom: 2,
   },
   groupName: {
-    fontSize: 16,
-    marginBottom: 24,
+    fontSize: 14,
+  },
+  closeButton: {
+    padding: 4,
   },
   inputContainer: {
     marginBottom: 20,
@@ -185,30 +225,42 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 8,
   },
-  input: {
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
+    paddingHorizontal: 12,
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 14,
     fontSize: 16,
   },
   button: {
     marginTop: 8,
-    borderRadius: 12,
+    overflow: "hidden",
   },
-  buttonContent: {
-    paddingVertical: 8,
+  buttonInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
   },
-  buttonLabel: {
+  buttonText: {
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },
   cancelButton: {
     marginTop: 16,
     alignItems: "center",
+    paddingVertical: 8,
   },
   cancelText: {
     fontSize: 16,
     fontWeight: "500",
   },
 });
-

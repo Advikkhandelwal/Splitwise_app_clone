@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import { useState, useContext } from "react";
+import { LinearGradient } from "expo-linear-gradient";
 import { signupUser } from "../../services";
 import { useNavigation } from "@react-navigation/native";
 import { ThemeContext } from "../../contexts/ThemeContext";
@@ -9,7 +10,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 const SignUpScreen = () => {
   const navigation = useNavigation();
-  const { colors } = useContext(ThemeContext);
+  const { colors, typography, shadows, borderRadius } = useContext(ThemeContext);
   const { setToken } = useContext(AuthContext);
   const [signup, setSignup] = useState({
     name: "",
@@ -59,150 +60,197 @@ const SignUpScreen = () => {
       }
     } catch (error) {
       console.log("Signup error:", error);
-      setSignup({ 
-        ...signup, 
-        loading: false, 
-        error: error.message || "Failed to create account. Please try again." 
+      setSignup({
+        ...signup,
+        loading: false,
+        error: error.message || "Failed to create account. Please try again."
       });
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
+    <View style={styles.container}>
+      <LinearGradient
+        colors={colors.accentGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientBackground}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <View style={[styles.iconContainer, { backgroundColor: colors.primary + "20" }]}>
-              <Icon name="person-add-outline" size={40} color={colors.primary} />
-            </View>
-            <Text style={[styles.title, { color: colors.text }]}>Create Account</Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Join us to start splitting expenses
-            </Text>
-          </View>
-
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <TextInput
-              label="Full Name"
-              mode="outlined"
-              style={styles.input}
-              value={signup.name}
-              onChangeText={(val) =>
-                setSignup({
-                  ...signup,
-                  name: val,
-                })
-              }
-              left={<TextInput.Icon icon="person-outline" />}
-              outlineColor={colors.border}
-              activeOutlineColor={colors.primary}
-              textColor={colors.text}
-            />
-
-            <TextInput
-              label="Email"
-              mode="outlined"
-              style={styles.input}
-              value={signup.email}
-              onChangeText={(val) =>
-                setSignup({
-                  ...signup,
-                  email: val,
-                })
-              }
-              left={<TextInput.Icon icon="mail-outline" />}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              outlineColor={colors.border}
-              activeOutlineColor={colors.primary}
-              textColor={colors.text}
-            />
-
-            <TextInput
-              label="Phone"
-              mode="outlined"
-              style={styles.input}
-              keyboardType="phone-pad"
-              value={signup.phone}
-              onChangeText={(val) =>
-                setSignup({
-                  ...signup,
-                  phone: val,
-                })
-              }
-              left={<TextInput.Icon icon="call-outline" />}
-              outlineColor={colors.border}
-              activeOutlineColor={colors.primary}
-              textColor={colors.text}
-            />
-
-            <TextInput
-              label="Password"
-              mode="outlined"
-              secureTextEntry={!signup.showPassword}
-              right={
-                <TextInput.Icon
-                  icon={signup.showPassword ? "eye-off-outline" : "eye-outline"}
-                  onPress={() =>
-                    setSignup({ ...signup, showPassword: !signup.showPassword })
-                  }
-                />
-              }
-              style={styles.input}
-              value={signup.password}
-              onChangeText={(val) =>
-                setSignup({
-                  ...signup,
-                  password: val,
-                })
-              }
-              left={<TextInput.Icon icon="lock-outline" />}
-              outlineColor={colors.border}
-              activeOutlineColor={colors.primary}
-              textColor={colors.text}
-            />
-
-            {signup.error ? (
-              <Text style={[styles.errorText, { color: colors.error || "#FF3B30" }]}>
-                {signup.error}
-              </Text>
-            ) : null}
-
-            <Button
-              loading={signup.loading}
-              mode="contained"
-              style={[styles.button, { backgroundColor: colors.primary }]}
-              onPress={onSignUp}
-              contentStyle={styles.buttonContent}
-              labelStyle={styles.buttonLabel}
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.keyboardView}
+          >
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
             >
-              Create Account
-            </Button>
+              <View style={styles.header}>
+                <View style={[styles.iconContainer, shadows.lg]}>
+                  <LinearGradient
+                    colors={[colors.secondaryLight, colors.secondary]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.iconGradient}
+                  >
+                    <Icon name="person-add-outline" size={48} color="#FFFFFF" />
+                  </LinearGradient>
+                </View>
+                <Text style={[styles.title, { ...typography.h1, color: "#FFFFFF" }]}>
+                  Create Account
+                </Text>
+                <Text style={[styles.subtitle, { ...typography.body1, color: "rgba(255, 255, 255, 0.9)" }]}>
+                  Join us to start splitting expenses
+                </Text>
+              </View>
 
-            <View style={styles.divider}>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-              <Text style={[styles.dividerText, { color: colors.textSecondary }]}>OR</Text>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            </View>
+              <View style={[styles.card, { borderRadius: borderRadius.xxl }, shadows.xl]}>
+                <View style={styles.cardInner}>
+                  <TextInput
+                    label="Full Name"
+                    mode="outlined"
+                    style={styles.input}
+                    value={signup.name}
+                    onChangeText={(val) =>
+                      setSignup({
+                        ...signup,
+                        name: val,
+                      })
+                    }
+                    left={<TextInput.Icon icon="person-outline" />}
+                    outlineColor={colors.inputBorder}
+                    activeOutlineColor={colors.secondary}
+                    textColor={colors.text}
+                    theme={{
+                      colors: {
+                        background: colors.inputBackground,
+                      },
+                    }}
+                  />
 
-            <Button
-              mode="text"
-              style={styles.loginButton}
-              labelStyle={[styles.loginButtonLabel, { color: colors.primary }]}
-              onPress={() => navigation.navigate("LoginScreen")}
-            >
-              Already have an account? Sign In
-            </Button>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+                  <TextInput
+                    label="Email"
+                    mode="outlined"
+                    style={styles.input}
+                    value={signup.email}
+                    onChangeText={(val) =>
+                      setSignup({
+                        ...signup,
+                        email: val,
+                      })
+                    }
+                    left={<TextInput.Icon icon="mail-outline" />}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    outlineColor={colors.inputBorder}
+                    activeOutlineColor={colors.secondary}
+                    textColor={colors.text}
+                    theme={{
+                      colors: {
+                        background: colors.inputBackground,
+                      },
+                    }}
+                  />
+
+                  <TextInput
+                    label="Phone"
+                    mode="outlined"
+                    style={styles.input}
+                    keyboardType="phone-pad"
+                    value={signup.phone}
+                    onChangeText={(val) =>
+                      setSignup({
+                        ...signup,
+                        phone: val,
+                      })
+                    }
+                    left={<TextInput.Icon icon="call-outline" />}
+                    outlineColor={colors.inputBorder}
+                    activeOutlineColor={colors.secondary}
+                    textColor={colors.text}
+                    theme={{
+                      colors: {
+                        background: colors.inputBackground,
+                      },
+                    }}
+                  />
+
+                  <TextInput
+                    label="Password"
+                    mode="outlined"
+                    secureTextEntry={!signup.showPassword}
+                    right={
+                      <TextInput.Icon
+                        icon={signup.showPassword ? "eye-off-outline" : "eye-outline"}
+                        onPress={() =>
+                          setSignup({ ...signup, showPassword: !signup.showPassword })
+                        }
+                      />
+                    }
+                    style={styles.input}
+                    value={signup.password}
+                    onChangeText={(val) =>
+                      setSignup({
+                        ...signup,
+                        password: val,
+                      })
+                    }
+                    left={<TextInput.Icon icon="lock-outline" />}
+                    outlineColor={colors.inputBorder}
+                    activeOutlineColor={colors.secondary}
+                    textColor={colors.text}
+                    theme={{
+                      colors: {
+                        background: colors.inputBackground,
+                      },
+                    }}
+                  />
+
+                  {signup.error ? (
+                    <Text style={[styles.errorText, { color: colors.error }]}>
+                      {signup.error}
+                    </Text>
+                  ) : null}
+
+                  <LinearGradient
+                    colors={colors.accentGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.buttonGradient, { borderRadius: borderRadius.md }, shadows.md]}
+                  >
+                    <Button
+                      loading={signup.loading}
+                      mode="text"
+                      onPress={onSignUp}
+                      contentStyle={styles.buttonContent}
+                      labelStyle={styles.buttonLabel}
+                      textColor="#FFFFFF"
+                    >
+                      Create Account
+                    </Button>
+                  </LinearGradient>
+
+                  <View style={styles.divider}>
+                    <View style={[styles.dividerLine, { backgroundColor: colors.cardBorder }]} />
+                    <Text style={[styles.dividerText, { color: colors.textSecondary }]}>OR</Text>
+                    <View style={[styles.dividerLine, { backgroundColor: colors.cardBorder }]} />
+                  </View>
+
+                  <Button
+                    mode="text"
+                    style={styles.loginButton}
+                    labelStyle={[styles.loginButtonLabel, { color: colors.secondary }]}
+                    onPress={() => navigation.navigate("LoginScreen")}
+                  >
+                    Already have an account? Sign In
+                  </Button>
+                </View>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </LinearGradient>
+    </View>
   );
 };
 
@@ -210,6 +258,12 @@ export default SignUpScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  gradientBackground: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   keyboardView: {
@@ -223,45 +277,43 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 40,
   },
   iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    marginBottom: 24,
+    overflow: "hidden",
+  },
+  iconGradient: {
+    width: "100%",
+    height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 24,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "700",
     textAlign: "center",
     marginBottom: 8,
-    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
     textAlign: "center",
   },
   card: {
-    borderRadius: 24,
-    padding: 24,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    padding: 28,
+    overflow: "hidden",
+  },
+  cardInner: {
+    width: "100%",
   },
   input: {
     marginBottom: 16,
     backgroundColor: "transparent",
   },
-  button: {
+  buttonGradient: {
     marginTop: 8,
-    borderRadius: 12,
-    elevation: 0,
+    overflow: "hidden",
   },
   buttonContent: {
     paddingVertical: 8,
@@ -299,3 +351,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+

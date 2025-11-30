@@ -7,6 +7,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 import FriendsScreen from "../screens/private/FriendsScreen";
 import GroupsScreen from "../screens/private/GroupsScreen";
+import GroupDetailScreen from "../screens/private/GroupDetailScreen";
 import ActivityScreen from "../screens/private/ActivityScreen";
 import AccountScreen from "../screens/private/AccountScreen";
 import AddExpenseScreen from "../screens/private/AddExpenseScreen";
@@ -84,9 +85,9 @@ function MainTabs() {
 export default function AppNavigator() {
   const { token, loading } = useContext(AuthContext);
 
-  useEffect(()=>{
-    
-  },[])
+  useEffect(() => {
+
+  }, [])
 
   if (loading) {
     return (
@@ -102,6 +103,11 @@ export default function AppNavigator() {
         {token ? (
           <>
             <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Screen
+              name="GroupDetail"
+              component={GroupDetailScreen}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="AddExpense"
               component={AddExpenseScreen}

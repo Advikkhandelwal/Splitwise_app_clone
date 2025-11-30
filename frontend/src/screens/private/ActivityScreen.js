@@ -8,13 +8,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { AuthContext } from "../../contexts/AuthContext";
 import { fetchUserActivity } from "../../services";
 
 export default function ActivityScreen() {
-  const { colors } = useContext(ThemeContext);
+  const { colors, shadows, borderRadius, typography } = useContext(ThemeContext);
   const { user } = useContext(AuthContext);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -78,17 +79,19 @@ export default function ActivityScreen() {
             backgroundColor: colors.card,
             borderColor: colors.cardBorder,
           },
+          shadows.md,
         ]}
       >
-        <View
+        <LinearGradient
+          colors={[
+            item.type === "expense" ? colors.primary + "15" : colors.success + "15",
+            item.type === "expense" ? colors.primary + "05" : colors.success + "05",
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={[
             styles.iconContainer,
-            {
-              backgroundColor:
-                item.type === "expense"
-                  ? colors.primary + "20"
-                  : colors.success + "20",
-            },
+            { borderRadius: borderRadius.md },
           ]}
         >
           <Icon
@@ -102,7 +105,7 @@ export default function ActivityScreen() {
             size={24}
             color={item.type === "expense" ? colors.primary : colors.success}
           />
-        </View>
+        </LinearGradient>
         <View style={styles.content}>
           <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
             {item.title}
@@ -330,19 +333,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 16,
     borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    overflow: "hidden",
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: 14,
+    overflow: "hidden",
   },
   content: {
     flex: 1,

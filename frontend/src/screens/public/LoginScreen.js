@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import { useContext, useState } from "react";
+import { LinearGradient } from "expo-linear-gradient";
 import { loginUser } from "../../services";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../contexts/AuthContext";
@@ -10,17 +11,18 @@ import Icon from "react-native-vector-icons/Ionicons";
 const LoginScreen = () => {
   const navigation = useNavigation();
   const { setToken } = useContext(AuthContext);
-  const { colors } = useContext(ThemeContext);
+  const { colors, spacing, typography, shadows, borderRadius } = useContext(ThemeContext);
   const [login, setLogin] = useState({
     username: "",
     password: "",
     loading: false,
     showPassword: false,
+    error: "",
   });
 
   const onLogin = async () => {
     try {
-      setLogin({ ...login, loading: true });
+      setLogin({ ...login, loading: true, error: "" });
       const res = await loginUser(login.username, login.password);
 
       // Save token and user info
@@ -29,102 +31,149 @@ const LoginScreen = () => {
       setLogin({ ...login, loading: false });
     } catch (error) {
       console.log(error);
-      setLogin({ ...login, loading: false });
+      setLogin({
+        ...login,
+        loading: false,
+        error: error.message || "Login failed. Please check your credentials."
+      });
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
+    <View style={styles.container}>
+      <LinearGradient
+        colors={colors.primaryGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientBackground}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <View style={[styles.iconContainer, { backgroundColor: colors.primary + "20" }]}>
-              <Icon name="wallet-outline" size={40} color={colors.primary} />
-            </View>
-            <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Sign in to manage your expenses
-            </Text>
-          </View>
-
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <TextInput
-              label="Email"
-              mode="outlined"
-              style={styles.input}
-              value={login.username}
-              onChangeText={(val) =>
-                setLogin({
-                  ...login,
-                  username: val,
-                })
-              }
-              left={<TextInput.Icon icon="email-outline" />}
-              outlineColor={colors.border}
-              activeOutlineColor={colors.primary}
-              textColor={colors.text}
-            />
-            <TextInput
-              label="Password"
-              mode="outlined"
-              secureTextEntry={!login.showPassword}
-              style={styles.input}
-              value={login.password}
-              onChangeText={(val) =>
-                setLogin({
-                  ...login,
-                  password: val,
-                })
-              }
-              left={<TextInput.Icon icon="lock-outline" />}
-              right={
-                <TextInput.Icon
-                  icon={login.showPassword ? "eye-off-outline" : "eye-outline"}
-                  onPress={() =>
-                    setLogin({ ...login, showPassword: !login.showPassword })
-                  }
-                />
-              }
-              outlineColor={colors.border}
-              activeOutlineColor={colors.primary}
-              textColor={colors.text}
-            />
-
-            <Button
-              loading={login.loading}
-              mode="contained"
-              style={[styles.button, { backgroundColor: colors.primary }]}
-              onPress={onLogin}
-              contentStyle={styles.buttonContent}
-              labelStyle={styles.buttonLabel}
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.keyboardView}
+          >
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
             >
-              Sign In
-            </Button>
+              <View style={styles.header}>
+                <View style={[styles.iconContainer, shadows.lg]}>
+                  <LinearGradient
+                    colors={[colors.primaryLight, colors.primary]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.iconGradient}
+                  >
+                    <Icon name="wallet-outline" size={48} color="#FFFFFF" />
+                  </LinearGradient>
+                </View>
+                <Text style={[styles.title, { ...typography.h1, color: "#FFFFFF" }]}>
+                  Welcome Back
+                </Text>
+                <Text style={[styles.subtitle, { ...typography.body1, color: "rgba(255, 255, 255, 0.9)" }]}>
+                  Sign in to manage your expenses
+                </Text>
+              </View>
 
-            <View style={styles.divider}>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-              <Text style={[styles.dividerText, { color: colors.textSecondary }]}>OR</Text>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            </View>
+              <View style={[styles.card, { borderRadius: borderRadius.xxl }, shadows.xl]}>
+                <View style={styles.cardInner}>
+                  <TextInput
+                    label="Email"
+                    mode="outlined"
+                    style={styles.input}
+                    value={login.username}
+                    onChangeText={(val) =>
+                      setLogin({
+                        ...login,
+                        username: val,
+                      })
+                    }
+                    left={<TextInput.Icon icon="email-outline" />}
+                    outlineColor={colors.inputBorder}
+                    activeOutlineColor={colors.primary}
+                    textColor={colors.text}
+                    theme={{
+                      colors: {
+                        background: colors.inputBackground,
+                      },
+                    }}
+                  />
+                  <TextInput
+                    label="Password"
+                    mode="outlined"
+                    secureTextEntry={!login.showPassword}
+                    style={styles.input}
+                    value={login.password}
+                    onChangeText={(val) =>
+                      setLogin({
+                        ...login,
+                        password: val,
+                      })
+                    }
+                    left={<TextInput.Icon icon="lock-outline" />}
+                    right={
+                      <TextInput.Icon
+                        icon={login.showPassword ? "eye-off-outline" : "eye-outline"}
+                        onPress={() =>
+                          setLogin({ ...login, showPassword: !login.showPassword })
+                        }
+                      />
+                    }
+                    outlineColor={colors.inputBorder}
+                    activeOutlineColor={colors.primary}
+                    textColor={colors.text}
+                    theme={{
+                      colors: {
+                        background: colors.inputBackground,
+                      },
+                    }}
+                  />
 
-            <Button
-              mode="text"
-              style={styles.signupButton}
-              labelStyle={[styles.signupButtonLabel, { color: colors.primary }]}
-              onPress={() => navigation.navigate("SignUpScreen")}
-            >
-              Don't have an account? Sign Up
-            </Button>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+                  {login.error ? (
+                    <Text style={[styles.errorText, { color: colors.error }]}>
+                      {login.error}
+                    </Text>
+                  ) : null}
+
+                  <LinearGradient
+                    colors={colors.primaryGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.buttonGradient, { borderRadius: borderRadius.md }, shadows.md]}
+                  >
+                    <Button
+                      loading={login.loading}
+                      mode="text"
+                      onPress={onLogin}
+                      contentStyle={styles.buttonContent}
+                      labelStyle={styles.buttonLabel}
+                      textColor="#FFFFFF"
+                    >
+                      Sign In
+                    </Button>
+                  </LinearGradient>
+
+                  <View style={styles.divider}>
+                    <View style={[styles.dividerLine, { backgroundColor: colors.cardBorder }]} />
+                    <Text style={[styles.dividerText, { color: colors.textSecondary }]}>OR</Text>
+                    <View style={[styles.dividerLine, { backgroundColor: colors.cardBorder }]} />
+                  </View>
+
+                  <Button
+                    mode="text"
+                    style={styles.signupButton}
+                    labelStyle={[styles.signupButtonLabel, { color: colors.primary }]}
+                    onPress={() => navigation.navigate("SignUpScreen")}
+                  >
+                    Don't have an account? Sign Up
+                  </Button>
+                </View>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </LinearGradient>
+    </View>
   );
 };
 
@@ -132,6 +181,12 @@ export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  gradientBackground: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   keyboardView: {
@@ -145,45 +200,43 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 40,
   },
   iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    marginBottom: 24,
+    overflow: "hidden",
+  },
+  iconGradient: {
+    width: "100%",
+    height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 24,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "700",
     textAlign: "center",
     marginBottom: 8,
-    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
     textAlign: "center",
   },
   card: {
-    borderRadius: 24,
-    padding: 24,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    padding: 28,
+    overflow: "hidden",
+  },
+  cardInner: {
+    width: "100%",
   },
   input: {
     marginBottom: 16,
     backgroundColor: "transparent",
   },
-  button: {
+  buttonGradient: {
     marginTop: 8,
-    borderRadius: 12,
-    elevation: 0,
+    overflow: "hidden",
   },
   buttonContent: {
     paddingVertical: 8,
@@ -192,6 +245,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     letterSpacing: 0.5,
+  },
+  errorText: {
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 12,
+    marginBottom: -4,
+    paddingHorizontal: 16,
   },
   divider: {
     flexDirection: "row",
@@ -214,3 +274,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+
