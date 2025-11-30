@@ -2,28 +2,28 @@ import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   ScrollView,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import { TextInput, Button } from "react-native-paper";
+import Icon from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { AuthContext } from "../../contexts/AuthContext";
 import { updateUser } from "../../services";
 
 export default function EditProfileScreen({ navigation }) {
-  const { colors } = useContext(ThemeContext);
+  const { colors, borderRadius, shadows } = useContext(ThemeContext);
   const { user, setToken } = useContext(AuthContext);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function EditProfileScreen({ navigation }) {
       }
 
       const updatedUser = await updateUser(user.user_id, updateData);
-      
+
       // Update stored user info
       await setToken("Token", {
         ...user,
@@ -71,7 +71,7 @@ export default function EditProfileScreen({ navigation }) {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
@@ -90,98 +90,119 @@ export default function EditProfileScreen({ navigation }) {
         >
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text }]}>Full Name</Text>
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.card,
-                    color: colors.text,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-                placeholder="Enter your name"
-                placeholderTextColor={colors.textSecondary}
+                label="Full Name"
+                mode="outlined"
+                style={[styles.input, { backgroundColor: colors.card }]}
                 value={name}
                 onChangeText={setName}
+                left={
+                  <TextInput.Icon
+                    icon={({ size, color }) => (
+                      <Icon name="person-outline" size={size} color={color} />
+                    )}
+                  />
+                }
+                outlineColor={colors.border}
+                activeOutlineColor={colors.primary}
+                textColor={colors.text}
+                theme={{ roundness: 12 }}
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text }]}>Email</Text>
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.card,
-                    color: colors.text,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-                placeholder="Enter your email"
-                placeholderTextColor={colors.textSecondary}
+                label="Email"
+                mode="outlined"
+                style={[styles.input, { backgroundColor: colors.card }]}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                left={
+                  <TextInput.Icon
+                    icon={({ size, color }) => (
+                      <Icon name="mail-outline" size={size} color={color} />
+                    )}
+                  />
+                }
+                outlineColor={colors.border}
+                activeOutlineColor={colors.primary}
+                textColor={colors.text}
+                theme={{ roundness: 12 }}
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text }]}>Phone</Text>
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.card,
-                    color: colors.text,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-                placeholder="Enter your phone"
-                placeholderTextColor={colors.textSecondary}
+                label="Phone"
+                mode="outlined"
+                style={[styles.input, { backgroundColor: colors.card }]}
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
+                left={
+                  <TextInput.Icon
+                    icon={({ size, color }) => (
+                      <Icon name="call-outline" size={size} color={color} />
+                    )}
+                  />
+                }
+                outlineColor={colors.border}
+                activeOutlineColor={colors.primary}
+                textColor={colors.text}
+                theme={{ roundness: 12 }}
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                New Password (optional)
-              </Text>
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.card,
-                    color: colors.text,
-                    borderColor: colors.cardBorder,
-                  },
-                ]}
-                placeholder="Enter new password"
-                placeholderTextColor={colors.textSecondary}
+                label="New Password (optional)"
+                mode="outlined"
+                style={[styles.input, { backgroundColor: colors.card }]}
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
+                left={
+                  <TextInput.Icon
+                    icon={({ size, color }) => (
+                      <Icon name="lock-closed-outline" size={size} color={color} />
+                    )}
+                  />
+                }
+                right={
+                  <TextInput.Icon
+                    icon={({ size, color }) => (
+                      <Icon
+                        name={showPassword ? "eye-off-outline" : "eye-outline"}
+                        size={size}
+                        color={color}
+                      />
+                    )}
+                    onPress={() => setShowPassword(!showPassword)}
+                  />
+                }
+                outlineColor={colors.border}
+                activeOutlineColor={colors.primary}
+                textColor={colors.text}
+                theme={{ roundness: 12 }}
               />
             </View>
 
-            <TouchableOpacity
-              style={[
-                styles.saveButton,
-                { backgroundColor: colors.primary },
-                loading && { opacity: 0.7 },
-              ]}
+            <Button
+              mode="contained"
               onPress={handleSave}
+              loading={loading}
               disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.saveButtonText}>Save Changes</Text>
+              style={[styles.saveButton, { backgroundColor: colors.primary, borderRadius: borderRadius.lg }]}
+              contentStyle={styles.saveButtonContent}
+              labelStyle={styles.saveButtonLabel}
+              icon={({ size, color }) => (
+                <Icon name="checkmark-circle-outline" size={size} color={color} />
               )}
-            </TouchableOpacity>
+            >
+              Save Changes
+            </Button>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -200,7 +221,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
   },
   backButton: {
     padding: 4,
@@ -216,27 +236,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
+    marginBottom: 16,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
     fontSize: 16,
   },
   saveButton: {
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 20,
+    marginTop: 24,
   },
-  saveButtonText: {
-    color: "#FFFFFF",
+  saveButtonContent: {
+    paddingVertical: 8,
+  },
+  saveButtonLabel: {
     fontSize: 16,
     fontWeight: "600",
   },

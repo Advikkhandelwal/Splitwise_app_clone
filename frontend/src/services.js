@@ -1,6 +1,8 @@
-const API_HOST = "103.147.161.118";
+// const API_HOST = "103.147.161.118";
+const API_HOST = "10.254.200.71";
 const API_PORT = "3001";
-export const BASE_URL = `http://${API_HOST}:${API_PORT}`;
+// export const BASE_URL = `http://${API_HOST}:${API_PORT}`;
+export const BASE_URL = "http://10.254.200.71:3001";
 
 export const signupUser = async (name, email, phone, password) => {
   try {

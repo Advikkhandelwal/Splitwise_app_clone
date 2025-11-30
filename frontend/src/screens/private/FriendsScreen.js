@@ -11,7 +11,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import FriendItem from "../../components/FriendItem";
 import { fetchUsers, sendFriendInvitation } from "../../services";

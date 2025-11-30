@@ -9,7 +9,7 @@ import {
   Switch,
   Alert,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { AuthContext } from "../../contexts/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";

@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { Button } from "react-native-paper";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { AuthContext } from "../../contexts/AuthContext";
 import { joinGroupViaInvitation, fetchUserById } from "../../services";

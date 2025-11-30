@@ -8,7 +8,7 @@ import {
   ScrollView,
   Switch,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../../contexts/ThemeContext";
 
 export default function NotificationsScreen({ navigation }) {

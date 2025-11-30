@@ -5,6 +5,7 @@ CREATE TABLE `User` (
     `email` VARCHAR(191) NOT NULL,
     `phone` VARCHAR(191) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `password` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `User_email_key`(`email`),
     UNIQUE INDEX `User_phone_key`(`phone`),
@@ -29,6 +30,8 @@ CREATE TABLE `GroupMember` (
     `user_id` INTEGER NOT NULL,
     `joined_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `GroupMember_group_id_fkey`(`group_id`),
+    INDEX `GroupMember_user_id_fkey`(`user_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -41,6 +44,8 @@ CREATE TABLE `Expense` (
     `amount` DECIMAL(10, 2) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `Expense_group_id_fkey`(`group_id`),
+    INDEX `Expense_paid_by_fkey`(`paid_by`),
     PRIMARY KEY (`expense_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -51,6 +56,8 @@ CREATE TABLE `ExpenseSplit` (
     `user_id` INTEGER NOT NULL,
     `share` DECIMAL(10, 2) NOT NULL,
 
+    INDEX `ExpenseSplit_expense_id_fkey`(`expense_id`),
+    INDEX `ExpenseSplit_user_id_fkey`(`user_id`),
     PRIMARY KEY (`split_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -63,6 +70,9 @@ CREATE TABLE `Settlement` (
     `amount` DECIMAL(10, 2) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `Settlement_group_id_fkey`(`group_id`),
+    INDEX `Settlement_paid_by_fkey`(`paid_by`),
+    INDEX `Settlement_paid_to_fkey`(`paid_to`),
     PRIMARY KEY (`settlement_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

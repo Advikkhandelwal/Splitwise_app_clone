@@ -13,7 +13,7 @@ import {
   ScrollView,
   RefreshControl,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/Ionicons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { fetchGroups, createGroup, sendGroupInvitation } from "../../services";
 import { ThemeContext } from "../../contexts/ThemeContext";

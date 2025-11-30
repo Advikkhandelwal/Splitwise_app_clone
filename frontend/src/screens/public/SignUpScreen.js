@@ -6,7 +6,7 @@ import { signupUser } from "../../services";
 import { useNavigation } from "@react-navigation/native";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { AuthContext } from "../../contexts/AuthContext";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/Ionicons";
 
 const SignUpScreen = () => {
   const navigation = useNavigation();
@@ -117,7 +117,13 @@ const SignUpScreen = () => {
                         name: val,
                       })
                     }
-                    left={<TextInput.Icon icon="person-outline" />}
+                    left={
+                      <TextInput.Icon
+                        icon={({ size, color }) => (
+                          <Icon name="person-outline" size={size} color={color} />
+                        )}
+                      />
+                    }
                     outlineColor={colors.inputBorder}
                     activeOutlineColor={colors.secondary}
                     textColor={colors.text}
@@ -139,7 +145,13 @@ const SignUpScreen = () => {
                         email: val,
                       })
                     }
-                    left={<TextInput.Icon icon="mail-outline" />}
+                    left={
+                      <TextInput.Icon
+                        icon={({ size, color }) => (
+                          <Icon name="mail-outline" size={size} color={color} />
+                        )}
+                      />
+                    }
                     keyboardType="email-address"
                     autoCapitalize="none"
                     outlineColor={colors.inputBorder}
@@ -164,7 +176,13 @@ const SignUpScreen = () => {
                         phone: val,
                       })
                     }
-                    left={<TextInput.Icon icon="call-outline" />}
+                    left={
+                      <TextInput.Icon
+                        icon={({ size, color }) => (
+                          <Icon name="call-outline" size={size} color={color} />
+                        )}
+                      />
+                    }
                     outlineColor={colors.inputBorder}
                     activeOutlineColor={colors.secondary}
                     textColor={colors.text}
@@ -181,7 +199,13 @@ const SignUpScreen = () => {
                     secureTextEntry={!signup.showPassword}
                     right={
                       <TextInput.Icon
-                        icon={signup.showPassword ? "eye-off-outline" : "eye-outline"}
+                        icon={({ size, color }) => (
+                          <Icon
+                            name={signup.showPassword ? "eye-off-outline" : "eye-outline"}
+                            size={size}
+                            color={color}
+                          />
+                        )}
                         onPress={() =>
                           setSignup({ ...signup, showPassword: !signup.showPassword })
                         }
@@ -195,7 +219,13 @@ const SignUpScreen = () => {
                         password: val,
                       })
                     }
-                    left={<TextInput.Icon icon="lock-outline" />}
+                    left={
+                      <TextInput.Icon
+                        icon={({ size, color }) => (
+                          <Icon name="lock-closed-outline" size={size} color={color} />
+                        )}
+                      />
+                    }
                     outlineColor={colors.inputBorder}
                     activeOutlineColor={colors.secondary}
                     textColor={colors.text}

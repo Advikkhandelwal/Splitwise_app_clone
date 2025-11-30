@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Button } from "react-native-paper";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/Ionicons";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { createExpense, fetchGroupById, fetchUsers } from "../../services";
 import { useNavigation, useRoute } from "@react-navigation/native";

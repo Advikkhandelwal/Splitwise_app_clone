@@ -6,7 +6,7 @@ import { loginUser } from "../../services";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../contexts/AuthContext";
 import { ThemeContext } from "../../contexts/ThemeContext";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "@expo/vector-icons/Ionicons";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -88,7 +88,13 @@ const LoginScreen = () => {
                         username: val,
                       })
                     }
-                    left={<TextInput.Icon icon="email-outline" />}
+                    left={
+                      <TextInput.Icon
+                        icon={({ size, color }) => (
+                          <Icon name="mail-outline" size={size} color={color} />
+                        )}
+                      />
+                    }
                     outlineColor={colors.inputBorder}
                     activeOutlineColor={colors.primary}
                     textColor={colors.text}
@@ -110,10 +116,22 @@ const LoginScreen = () => {
                         password: val,
                       })
                     }
-                    left={<TextInput.Icon icon="lock-outline" />}
+                    left={
+                      <TextInput.Icon
+                        icon={({ size, color }) => (
+                          <Icon name="lock-closed-outline" size={size} color={color} />
+                        )}
+                      />
+                    }
                     right={
                       <TextInput.Icon
-                        icon={login.showPassword ? "eye-off-outline" : "eye-outline"}
+                        icon={({ size, color }) => (
+                          <Icon
+                            name={login.showPassword ? "eye-off-outline" : "eye-outline"}
+                            size={size}
+                            color={color}
+                          />
+                        )}
                         onPress={() =>
                           setLogin({ ...login, showPassword: !login.showPassword })
                         }
